@@ -67,19 +67,23 @@ def split_project(data):
             start_time
         ]
 	
-	    # saving files and sending them to the output bucket
+	    # saving files
         output_path = f'/tmp/{project_id[0]}-{y}.json'
 
         with open(output_path, 'w') as json_handler:
             output = open(output_path, 'wt')
             output.write(json.dump(json_handler, output_path))
             output.close()
+
+
+        extension = ".json"
+
+
+        dir_name = f'/tmp'
         
-        zipped_file = gzip.GzipFile(output_path)
-        print(zipped_file)
+        for file_name in glob(os.path.join(dir_name, extension)): # loop through items in dir
+         with gzip.compress(file_name, 'rb') 
 
-
-        # salvar todos os y em um único gzip
         # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
         output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
         output_bucket = storage_client.bucket(output_bucket_name)
