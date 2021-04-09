@@ -7,6 +7,7 @@ import json
 import pandas as pd 
 import datetime as dt
 from google.cloud import storage
+import tarfile
 
 def split_project(data):
 
@@ -67,31 +68,28 @@ def split_project(data):
             start_time
         ]
 	
-	    # saving files
+	    # saving files and sending them to the output bucket
         output_path = f'/tmp/{project_id[0]}-{y}.json'
 
         with open(output_path, 'w') as json_handler:
-            output = open(output_path, 'wt')
-            output.write(json.dump(json_handler, output_path))
+            output = open(json_handler, 'wt')
+            #output.write(json.dump(json_handler, output_path))
+            output.write(json.dumps(process))
             output.close()
-
-
-        extension = ".json"
-
-
-        dir_name = f'/tmp'
         
-        for file_name in glob(os.path.join(dir_name, extension)): # loop through items in dir
-         with gzip.compress(file_name, 'rb') 
-	
+    # w:gz -> Open for gzip compressed writing
+    with tarfile.open(f'/{project_id[0]}.tar', "w:gz") as tar:
+        tar.add('/tmp/')
+        tar.close()
 
-        # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
-        output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
-        output_bucket = storage_client.bucket(output_bucket_name)
-        new_blob = output_bucket.blob(f'{project_id[0]}.gz')
-        new_blob.upload_from_filename(new_output_path)
-        print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}.gz")
-        json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}.gz")
+    # salvar todos os y em um único gzip
+    # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
+    output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
+    output_bucket = storage_client.bucket(output_bucket_name)
+    new_blob = output_bucket.blob(f'{project_id[0]}.tar.gz')
+    new_blob.upload_from_filename(output_path)
+    print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}.tar.gz")
+    json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}.tar.gz")
 
  #   with open(f'./outputs/{project_id[0]}-map.json', 'w') as mapfile:
  #       mapfile.write(json.dumps(json_paths))
