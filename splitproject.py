@@ -83,12 +83,13 @@ def split_project(data):
         
         for file_name in glob(os.path.join(dir_name, extension)): # loop through items in dir
          with gzip.compress(file_name, 'rb') 
+	
 
         # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
         output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
         output_bucket = storage_client.bucket(output_bucket_name)
         new_blob = output_bucket.blob(f'{project_id[0]}.gz')
-        new_blob.upload_from_filename(output_path)
+        new_blob.upload_from_filename(new_output_path)
         print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}.gz")
         json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}.gz")
 
