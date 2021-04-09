@@ -80,9 +80,11 @@ def split_project(data):
     # w:gz -> Open for gzip compressed writing
     
 
-    output_filename = f'/tmp/{project_id[0].tar'
+    output_filename = f'/tmp/{project_id[0]}.tar'  
+    files = glob.glob('tmp/*')
     with tarfile.open(output_filename, "w:gz") as tar:
-        tar.add('/*')
+        for file in files:
+            tar.add(file, arcname = file.split('tmp/')[1])
         tar.close()
 
     # salvar todos os y em um único gzip
