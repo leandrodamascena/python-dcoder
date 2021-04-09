@@ -87,10 +87,10 @@ def split_project(data):
         # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
         output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
         output_bucket = storage_client.bucket(output_bucket_name)
-        new_blob = output_bucket.blob(f'{project_id[0]}-{y}.json.gz')
+        new_blob = output_bucket.blob(f'{project_id[0]}.gz')
         new_blob.upload_from_filename(output_path)
-        print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}-{y}.json.gz")
-        json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}-{y}.json.gz")
+        print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}.gz")
+        json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}.gz")
 
  #   with open(f'./outputs/{project_id[0]}-map.json', 'w') as mapfile:
  #       mapfile.write(json.dumps(json_paths))
