@@ -29,24 +29,18 @@ def split_project(data):
     blob = bucket.blob(file_name)
     blob_uri = f"gs://{bucket_name}/{file_name}"
 
-
-
     _, temp_local_filename = tempfile.mkstemp()
 
     # Download file from bucket.
     blob.download_to_filename(temp_local_filename)
     print(f"File {file_name} was downloaded to {temp_local_filename}.")
 
-
     # opening and decoding the .gz file received by the API/frontend
-
-
 
     f=gzip.open(temp_local_filename,'rb')
     file_content=f.read()
     decoded_file = base64.b64decode(file_content)
     obj = json.loads(gzip.decompress(decoded_file))
-
 
     # extracting project properties
     project_id = obj['project_id']
@@ -54,10 +48,8 @@ def split_project(data):
     model_spec = obj['model_spec']
     start_time = [dt.datetime.now().strftime("%Y%m%d_%H%M%S")]
 
-
     data_df = [pd.DataFrame(obj['data_list'][x]) for x in obj['data_list'].keys()]
     data_list_colnames = [list(x.columns) for x in data_df]
-
 
     json_paths = list()
 
@@ -75,11 +67,15 @@ def split_project(data):
             start_time
         ]
 	
-	# saving files and sending them to the output bucket
+	    # saving files and sending them to the output bucket
         output_path = f'/tmp/{project_id[0]}-{y}.json.gz'
-        output = gzip.open(output_path, 'wt')
-        output.write(json.dumps(process))
-        output.close()
+
+        with open(output_path, 'w') as json_handler:
+            output = open(output_path, 'wt')
+            output.write(json.dump(json_handler))
+            output.close()
+
+        # salvar todos os y em um único gzip
         # previous bucket name: OUTPUT_BUCKET_{project_id[0]}
         output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
         output_bucket = storage_client.bucket(output_bucket_name)
