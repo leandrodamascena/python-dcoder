@@ -78,7 +78,10 @@ def split_project(data):
             output.close()
         
     # w:gz -> Open for gzip compressed writing
-    with tarfile.open(f'/{project_id[0]}.tar', "w:gz") as tar:
+    
+
+    output_filename = f'/{​​​​​​​​project_id[0]}​​​​​​​​.tar'
+    with tarfile.open(output_filename, "w:gz") as tar:
         tar.add('/tmp/')
         tar.close()
 
