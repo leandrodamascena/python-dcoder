@@ -7,6 +7,7 @@ import json
 import pandas as pd 
 import datetime as dt
 from google.cloud import storage
+import glob
 import tarfile
 
 def split_project(data):
@@ -30,18 +31,24 @@ def split_project(data):
     blob = bucket.blob(file_name)
     blob_uri = f"gs://{bucket_name}/{file_name}"
 
+
+
     _, temp_local_filename = tempfile.mkstemp()
 
     # Download file from bucket.
     blob.download_to_filename(temp_local_filename)
     print(f"File {file_name} was downloaded to {temp_local_filename}.")
 
+
     # opening and decoding the .gz file received by the API/frontend
+
+
 
     f=gzip.open(temp_local_filename,'rb')
     file_content=f.read()
     decoded_file = base64.b64decode(file_content)
     obj = json.loads(gzip.decompress(decoded_file))
+
 
     # extracting project properties
     project_id = obj['project_id']
@@ -49,8 +56,10 @@ def split_project(data):
     model_spec = obj['model_spec']
     start_time = [dt.datetime.now().strftime("%Y%m%d_%H%M%S")]
 
+
     data_df = [pd.DataFrame(obj['data_list'][x]) for x in obj['data_list'].keys()]
     data_list_colnames = [list(x.columns) for x in data_df]
+
 
     json_paths = list()
 
@@ -70,21 +79,21 @@ def split_project(data):
 	
 	    # saving files and sending them to the output bucket
         output_path = f'/tmp/{project_id[0]}-{y}.json'
-
-        with open(output_path, 'w') as json_handler:
-            output = open(json_handler, 'wt')
-            #output.write(json.dump(json_handler, output_path))
-            output.write(json.dumps(process))
-            output.close()
+        output = open(output_path, 'wt')
+        output.write(json.dumps(process))
+        output.close()
         
     # w:gz -> Open for gzip compressed writing
     
 
-    output_filename = f'/tmp/{project_id[0]}.tar'  
-    files = glob.glob('tmp/*')
+    output_filename = f'/tmp/{project_id[0]}.tar'
+    print (output_filename)  
+    files = glob.glob('/tmp/*.json')
+    print (files)
     with tarfile.open(output_filename, "w:gz") as tar:
         for file in files:
-            tar.add(file, arcname = file.split('tmp/')[1])
+            print (file)
+            tar.add(file, arcname = file.split('/tmp/')[1])
         tar.close()
 
     # salvar todos os y em um único gzip
@@ -92,7 +101,7 @@ def split_project(data):
     output_bucket_name = os.getenv(f"OUTPUT_BUCKET")
     output_bucket = storage_client.bucket(output_bucket_name)
     new_blob = output_bucket.blob(f'{project_id[0]}.tar.gz')
-    new_blob.upload_from_filename(output_path)
+    new_blob.upload_from_filename(output_filename)
     print(f"Output file uploaded to: gs://{output_bucket_name}/{project_id[0]}.tar.gz")
     json_paths.append(f"gs://{output_bucket_name}/{project_id[0]}.tar.gz")
 
