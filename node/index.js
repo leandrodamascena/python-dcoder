@@ -39,8 +39,8 @@ async function downloadFile(bucketName, fileName) {
 }
 
 async function processJob(fileName) {
-  const cmd = 'Rscript run_script.R ' + 
-              `"/tmp/${fileName}"`;
+  const cmd = 'tar -xzvf '+fileName+' && rm -rf '+fileName+' && Rscript run_script.R /tmp/';
+  
   console.log(cmd);
   const { stdout, stderr } = await exec(cmd);
   if (stderr) {
